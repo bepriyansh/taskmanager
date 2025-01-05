@@ -13,21 +13,21 @@ const TaskCard = () => {
     const fetchTasks = async () => {
       setLoading(true);
       try {
-        const tasksData = await getTasks(); // Fetch tasks
-        setTasks(tasksData); // Set the tasks in state
-      } catch (error: unknown) {  // Use `unknown` instead of `any`
+        const tasksData = await getTasks();
+        setTasks(tasksData); 
+      } catch (error: unknown) {  
         if (error instanceof Error) {
-          setError(error.message);  // Safely handle the error
+          setError(error.message); 
         } else {
           setError("An unknown error occurred");
         }
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false); 
       }
     };
 
-    fetchTasks(); // Call the function to fetch tasks
-  }, []); // Empty dependency array to run only once on mount
+    fetchTasks();
+  }, []);
 
   return (
     <div className="w-full max-w-[750px] border rounded-lg shadow-lg p-5 mb-4">

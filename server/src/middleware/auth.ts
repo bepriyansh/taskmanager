@@ -11,7 +11,6 @@ interface DecodedToken {
 // Register User
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { username, password, email, ...otherDetails } = req.body;
-    console.log(req.body)
 
     // Validate required fields
     if (!(username && password && email)) {
@@ -59,7 +58,6 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 // Login User
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { username, password } = req.body;
-    console.log(req.body)
 
     // Validate required fields
     if (!(username && password)) {
