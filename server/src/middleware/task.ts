@@ -1,26 +1,35 @@
 import { Request, Response, NextFunction } from "express";
-import Task from "../models/task"; // Assuming the Task model is in this path
+import Task from "../models/task"; 
 import { createError, sendResponse } from "../utils/responseUtils";
 
-// Get Task
-export const getTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+
+// Get all tasks for a given user
+export const getTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const taskId = req.query.taskId; // Get task ID from query params (or body if you prefer)
-
-        if (!taskId) {
-            return next(createError(400, "Task ID is required"));
+        if (!req.user) {
+            return next(createError(401, 'User not authenticated'));
         }
 
-        const task = await Task.findById(taskId);
-        if (!task) {
-            return next(createError(404, "Task not found"));
+        const userId = req.user.id;
+
+        if (!userId) {
+            return next(createError(400, "User ID is required"));
         }
 
-        sendResponse(res, 200, "Task retrieved successfully", { task });
+        // Find all tasks for the given user
+        const tasks = await Task.find({ userId });
+
+        if (!tasks || tasks.length === 0) {
+            return next(createError(404, "No tasks found for this user"));
+        }
+
+        sendResponse(res, 200, "Tasks retrieved successfully", { tasks });
     } catch (error) {
         next(createError(500, "Internal Server Error"));
     }
 };
+
+
 
 // Create Task
 export const createTask = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -96,6 +105,7 @@ export const updateTaskStatus = async (req: Request, res: Response, next: NextFu
 
         // Update task status
         task.status = status;
+        console.log(task.status)
 
         await task.save();
 

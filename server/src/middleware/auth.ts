@@ -1,6 +1,6 @@
 import User from '../models/user';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { createError, sendResponse } from '../utils/responseUtils';
 import { Request, Response, NextFunction } from 'express';
 
@@ -11,6 +11,7 @@ interface DecodedToken {
 // Register User
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { username, password, email, ...otherDetails } = req.body;
+    console.log(req.body)
 
     // Validate required fields
     if (!(username && password && email)) {
@@ -39,7 +40,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
         await user.save();
 
         // Generate JWT token
-        const access_token = jwt.sign(
+        const token = jwt.sign(
             { id: user._id },
             process.env.JWT_SECRET_KEY!,
             { expiresIn: '1d' }
@@ -47,8 +48,8 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 
         // Send response
         sendResponse(res, 201, 'Account created successfully', {
-            userId: user._id,
-            access_token
+            username,
+            token
         });
     } catch (error) {
         next(createError(500, "Internal Server Error"));
@@ -58,6 +59,7 @@ export const register = async (req: Request, res: Response, next: NextFunction):
 // Login User
 export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let { username, password } = req.body;
+    console.log(req.body)
 
     // Validate required fields
     if (!(username && password)) {
@@ -77,31 +79,43 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
         }
 
         // Generate JWT token
-        const access_token = jwt.sign(
+        const token = jwt.sign(
             { id: user._id },
             process.env.JWT_SECRET_KEY!,
             { expiresIn: '1d' }
         );
 
         // Send response
-        sendResponse(res, 200, 'Logged in successfully', { access_token });
+        sendResponse(res, 200, 'Logged in successfully', { token, username });
     } catch (error) {
         next(createError(500, "Internal Server Error"));
     }
 };
 
+
+
+// Define a type for the decoded token
+interface DecodedToken extends JwtPayload {
+  id: string;
+}
+
 // Verify User
 export const verifyUser = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
-    const { token, username } = req.params;
+    const { token, username } = req.query;
 
-    if (!token || !username) {
-        return next(createError(401, "Unauthorized"));
+    if (typeof token !== 'string' || typeof username !== 'string') {
+        return next(createError(400, "Invalid request parameters"));
     }
 
     try {
+        // Verify the token and cast to DecodedToken
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY!) as DecodedToken;
-        const id = decodedToken.id;
-        let user = await User.findById(id);
+
+        if (!decodedToken.id) {
+            return next(createError(401, "Unauthorized"));
+        }
+
+        const user = await User.findById(decodedToken.id);
         if (user?.username !== username) {
             return next(createError(401, "Unauthorized"));
         }
