@@ -8,11 +8,6 @@ export interface ITask {
   __v?: number;            
 }
 
-
-export interface IUserIcon {
-  name: string;
-}
-
 export  interface LoginResponse {
   success: boolean;
   data: {
