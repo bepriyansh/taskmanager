@@ -14,7 +14,7 @@ const app = Express();
 // Allow requests from localhost:3000 and allow credentials
 app.use(
   cors({
-    origin: 'http://localhost:3000',  // Allow only this origin
+    origin: ['http://localhost:3000','https://taskmanager_client.vercel.app'],  // Allow only these origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'],  // Allowed headers
     credentials: true,  // Allow credentials (cookies, authorization headers, etc.)
