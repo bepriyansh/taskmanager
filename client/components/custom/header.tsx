@@ -5,12 +5,10 @@ import { ThemeToggle } from "../toggleTheme";
 import Usericon from "./usericon";
 import CreateTask from "./createTask";
 
-import { useRouter } from "next/navigation";
 import { parseCookies } from "nookies";
 
 const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const cookies = parseCookies();

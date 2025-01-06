@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { parseCookies } from 'nookies';
 import { ITask } from '../interfaces';
 
-const API_URL = process.env.NEXT_PUBLIC_TASK_CRUD!;
+const API_URL = process.env.NEXT_PUBLIC_SERVER!+'/task'; 
 
 const getCookie = (name: string): string | undefined => {
     const cookies = parseCookies();
@@ -20,7 +20,6 @@ export const getTasks = async (): Promise<ITask[]> => {
 
         const response = await axios.get(`${API_URL}/get`, {
             params: { token, username },
-            withCredentials: true, 
         });
         console.log(await response.data.data.tasks)
         return response.data.data.tasks as ITask[];  
@@ -48,7 +47,6 @@ export const createTask = async (title: string, description: string, dueDate: st
             { title, description, dueDate },
             {
                 params: { token, username },
-                withCredentials: true,
             }
         );
         return response.data;
@@ -76,7 +74,7 @@ export const updateTask = async (taskId: string, title?: string, description?: s
             { taskId, title, description, dueDate },
             {
                 params: { token, username },
-                withCredentials: true,
+                
             }
         );
         return response.data;
@@ -104,7 +102,6 @@ export const updateTaskStatus = async (taskId: string, status: 'pending' | 'comp
             { taskId, status },
             {
                 params: { token, username },
-                withCredentials: true,
             }
         );
         console.log(await response.data)
@@ -133,7 +130,6 @@ export const deleteTask = async (taskId: string): Promise<void> => {
             {
                 data: { taskId },
                 params: { token, username },
-                withCredentials: true,
             }
         );
         return response.data; 

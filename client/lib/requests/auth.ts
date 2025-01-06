@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { LoginResponse } from '../interfaces';
 
-const API_URL = process.env.NEXT_PUBLIC_AUTH_URI!; 
+const API_URL = process.env.NEXT_PUBLIC_SERVER!+'/auth'; 
 
 export const register = async (username: string, password: string, email: string): Promise<LoginResponse> => {
     try {
