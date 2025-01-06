@@ -20,9 +20,9 @@ const TaskCard = () => {
           {tasks.length === 0 ? (
             <p>No tasks available</p>
           ) : (
-            tasks.map((task: ITask, i) => (
+            tasks.map((task: ITask) => (
               <Task
-                key={i}
+                key={task._id}
                 _id={task._id}
                 title={task.title}
                 description={task.description}

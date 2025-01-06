@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { signIn, SignInResponse } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -42,6 +43,12 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  const { status } = useSession();
+
+  if (status === "authenticated") {
+    router.push('/')
+  }
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-screen">
