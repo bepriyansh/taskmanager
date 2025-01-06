@@ -3,9 +3,7 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/requests/auth";
-import { setCookie } from "nookies";
-import { LoginResponse } from "@/lib/interfaces";
+import { signIn, SignInResponse } from "next-auth/react";
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -26,27 +24,19 @@ const Login = () => {
     setError(null);
 
     try {
-      const response: LoginResponse = await login(
-        formData.username,
-        formData.password
-      );
-
-      if (response?.success) {
-        console.log(response.data);
-        // Store username, token in cookies
-        setCookie(null, "token", response.data.token, {
-          maxAge: 30 * 24 * 60 * 60, // 30 days
-          path: "/",
-        });
-        setCookie(null, "username", response.data.username, {
-          maxAge: 30 * 24 * 60 * 60, // 30 days
-          path: "/",
-        });
+      const response: SignInResponse | undefined = await signIn("credentials", {
+        redirect: false,
+        username: formData.username,
+        password: formData.password,
+      });
+      if (response?.error) {
+        setError("Invalid credentials. Please try again.");
+      } else if (response?.ok) {
         router.push("/");
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message || "Invalid credentials. Please try again.");
+        setError(error.message || "An error occurred. Please try again.");
       }
     } finally {
       setLoading(false);

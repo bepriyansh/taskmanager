@@ -1,33 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { ITask } from "@/lib/interfaces";
-import { getTasks } from "@/lib/requests/tasks";
 import Task from "./task";
+import { useTaskContext } from "@/context/taskContext";
 
 const TaskCard = () => {
-  const [tasks, setTasks] = useState<ITask[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const { tasks, fetchTasks } = useTaskContext();
 
-  // Fetch tasks on component mount
   useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const tasksData = await getTasks();
-        setTasks(tasksData); 
-      } catch (error: unknown) {  
-        if (error instanceof Error) {
-          setError(error.message); 
-        } else {
-          setError("An unknown error occurred");
-        }
-      } finally {
-        setLoading(false); 
-      }
-    };
-
-    fetchTasks();
-  }, []);
+    fetchTasks(); // Fetch tasks on mount
+  }, [fetchTasks]); // Only call fetchTasks once when the component mounts
 
   return (
     <div className="w-full max-w-[750px] border rounded-lg shadow-lg p-5 mb-4">
@@ -36,14 +17,12 @@ const TaskCard = () => {
           <p>My Tasks ({`${tasks.length}`})</p>
         </div>
         <div className="flex flex-col max-h-[350px] overflow-y-auto">
-          {loading ? (
-            <p>Loading tasks...</p>
-          ) : error ? (
-            <p className="text-red-500">{error}</p>
+          {tasks.length === 0 ? (
+            <p>No tasks available</p>
           ) : (
-            tasks.map((task) => (
+            tasks.map((task: ITask, i) => (
               <Task
-                key={task._id}
+                key={i}
                 _id={task._id}
                 title={task.title}
                 description={task.description}

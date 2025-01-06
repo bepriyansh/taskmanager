@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +24,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { createTask } from "@/lib/requests/tasks";
+import { useTaskContext } from "@/context/taskContext";
+import { useSession } from "next-auth/react";
 
 interface Task {
   title: string;
@@ -32,15 +34,20 @@ interface Task {
 }
 
 const CreateTask = () => {
+  const { addTask } = useTaskContext();
+  
   const [task, setTask] = useState<Task>({
     title: "",
     description: "",
     dueDate: null,
   });
-
+  
   const [date, setDate] = useState<Date>();
-  const [loading, setLoading] = useState<boolean>(false); // Loading state for button
-  const [error, setError] = useState<string | null>(null); // For handling error messages
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Manage dialog open/close state
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -53,19 +60,11 @@ const CreateTask = () => {
     setError(null);
 
     try {
-      // Call the createTask function from API utils
-      const newTask = await createTask(
-        task.title,
-        task.description,
-        task.dueDate || ""
-      );
-
-      // Reset the form after saving
+      await addTask(task.title, task.description, task.dueDate || "");
       setTask({ title: "", description: "", dueDate: null });
       setDate(undefined);
-      return newTask
+      setDialogOpen(false); // Close the dialog after task is saved
     } catch (error) {
-      // Handle error if the task creation fails
       console.error("Error creating task:", error);
       setError("An error occurred while creating the task.");
     } finally {
@@ -73,10 +72,17 @@ const CreateTask = () => {
     }
   };
 
+  const { data: session, status } = useSession();
+  if (status === "loading" || !session) {
+    return null;
+  }
+
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-2xl">Add Task</Button>
+        <Button className="rounded-2xl" onClick={() => setDialogOpen(true)}>
+          Add Task
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -145,14 +151,13 @@ const CreateTask = () => {
           </div>
         </div>
 
-        {/* Show error message if there is one */}
         {error && <p className="text-red-500">{error}</p>}
 
         <DialogFooter>
           <Button
             type="button"
             onClick={handleSaveTask}
-            disabled={loading} // Disable the button while loading
+            disabled={loading}
           >
             {loading ? "Saving..." : "Save Task"}
           </Button>

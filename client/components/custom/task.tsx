@@ -21,17 +21,26 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, MoreVertical } from "lucide-react";
-import { deleteTask, updateTask, updateTaskStatus } from "@/lib/requests/tasks"; // Import the task functions
+import { useTaskContext } from "@/context/taskContext"; // Import context
 
 const Task: React.FC<ITask> = ({ _id, title, description, dueDate, status }) => {
+  const { editTask, deleteTask, updateTaskStatus } = useTaskContext(); // Use context
   const [marked, setMarked] = React.useState<boolean>(status === "completed");
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(title);
-  const [editDueDate, setEditDueDate] = React.useState<Date | undefined>(new Date(dueDate));
+  const [editDueDate, setEditDueDate] = React.useState<Date | undefined>(() => {
+    const parsedDate = new Date(dueDate);
+    return isNaN(parsedDate.getTime()) ? undefined : parsedDate;
+  });
   const [editDescription, setEditDescription] = React.useState(description);
 
   const getRelativeDate = (date: string) => {
     const taskDate = new Date(date);
+
+    if (isNaN(taskDate.getTime())) {
+      console.error("Invalid date:", date);
+      return "Invalid date"; 
+    }
 
     if (isToday(taskDate)) {
       return "Today";
@@ -45,8 +54,8 @@ const Task: React.FC<ITask> = ({ _id, title, description, dueDate, status }) => 
 
   const handleSaveEdit = async () => {
     try {
-      await updateTask(_id, editTitle, editDescription, format(editDueDate!, "yyyy-MM-dd"));
-      setEditDialogOpen(false); // Close dialog on successful update
+      await editTask(_id, editTitle, editDescription, format(editDueDate!, "yyyy-MM-dd"));
+      setEditDialogOpen(false); 
     } catch (error) {
       console.error("Error updating task:", error);
     }
@@ -54,7 +63,7 @@ const Task: React.FC<ITask> = ({ _id, title, description, dueDate, status }) => 
 
   const handleDeleteTask = async () => {
     try {
-      await deleteTask(_id); // Call delete task function
+      await deleteTask(_id); // Call deleteTask from context
       console.log("Task deleted successfully");
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -62,12 +71,10 @@ const Task: React.FC<ITask> = ({ _id, title, description, dueDate, status }) => 
   };
 
   const handleStatusChange = async () => {
-    const newStatus = marked ? "pending" : "completed"; // Use "completed" instead of "Completed"
+    const newStatus = marked ? "pending" : "completed";
     try {
-      const updatedTask = await updateTaskStatus(_id, newStatus); // Get updated task from API
-      if (updatedTask) {
-        setMarked(!marked); // Toggle marked status only if the API response is successful
-      }
+      await updateTaskStatus(_id, newStatus); 
+      setMarked(!marked); 
     } catch (error) {
       console.error("Error updating task status:", error);
     }
@@ -76,7 +83,7 @@ const Task: React.FC<ITask> = ({ _id, title, description, dueDate, status }) => 
   return (
     <div className="flex flex-col gap-1 p-2 border-b cursor-pointer">
       <div className="flex items-center gap-4">
-        <Checkbox checked={marked} onClick={()=>handleStatusChange()} />
+        <Checkbox checked={marked} onClick={() => handleStatusChange()} />
         <div className="flex-1">
           <p className={`text-sm font-medium ${marked ? "line-through" : ""}`}>{editTitle}</p>
           <p className="text-xs text-muted-foreground w-full max-w-[400px]">{description}</p>

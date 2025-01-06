@@ -1,21 +1,10 @@
-'use client'
-import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "../toggleTheme";
-import Usericon from "./usericon";
 import CreateTask from "./createTask";
 
-import { parseCookies } from "nookies";
+import Logout from "./logout";
 
 const Header = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const cookies = parseCookies();
-    if (cookies.token && cookies.username) {
-      setIsAuthenticated(true);
-    }
-  }, []);
   
 
   return (
@@ -25,9 +14,9 @@ const Header = () => {
           Task Manager
         </Link>
         <div className="flex justify-center items-center gap-3">
-          {isAuthenticated && <CreateTask />}
+          <CreateTask />
           <ThemeToggle />
-          {isAuthenticated && <Usericon />}
+          <Logout />
         </div>
       </div>
     </div>

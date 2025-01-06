@@ -3,16 +3,10 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { register } from "@/lib/requests/auth";
-import { setCookie } from "nookies";
-import { LoginResponse } from "@/lib/interfaces";
+import { signIn } from "next-auth/react";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -30,26 +24,21 @@ const Register = () => {
     setError(null);
 
     try {
-      const response: LoginResponse = await register(
-        formData.username,
-        formData.password,
-        formData.email,
-      );
-      if (response?.success) {
-        // Store username, token in cookies
-        setCookie(null, 'token', response.data.token, {
-          maxAge: 30 * 24 * 60 * 60, // 30 days
-          path: '/',
-        });
-        setCookie(null, 'username', response.data.username, {
-          maxAge: 30 * 24 * 60 * 60, // 30 days
-          path: '/',
-        });
+      const response = await signIn("credentials", {
+        redirect: false,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (response?.error) {
+        setError("Invalid credentials. Please try again.");
+      } else if (response?.ok) {
         router.push("/");
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        setError(error.message || "Registration failed. Please try again.");
+        setError(error.message || "An error occurred. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -74,7 +63,6 @@ const Register = () => {
               className="w-full"
               placeholder="Email"
               name="email"
-              type="email"
               value={formData.email}
               onChange={handleChange}
             />
@@ -82,7 +70,7 @@ const Register = () => {
               className="w-full"
               placeholder="Password"
               name="password"
-              // type="password"
+              type="password"
               value={formData.password}
               onChange={handleChange}
             />

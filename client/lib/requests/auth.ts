@@ -31,7 +31,7 @@ export const login = async (username: string, password: string): Promise<LoginRe
             username,
             password
         });
-
+        console.log(await response.data)
         return response.data;
     } catch (error: unknown) {
         if (error instanceof AxiosError) {

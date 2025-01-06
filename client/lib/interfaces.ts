@@ -1,3 +1,12 @@
+import { User as NextAuthUser } from "next-auth";
+
+export interface User extends NextAuthUser {
+  id: string;
+  username: string;
+  email: string;
+  token: string;  
+}
+
 export interface ITask {
   _id: string;          
   userId: string;          
@@ -8,7 +17,7 @@ export interface ITask {
   __v?: number;            
 }
 
-export  interface LoginResponse {
+export interface LoginResponse {
   success: boolean;
   data: {
     token: string;
