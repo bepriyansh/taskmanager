@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { ConnectDB } from "./utils/mongoDbUtil";
 import authRoutes from "./routes/auth";
 import taskRoutes from "./routes/tasks";
+import sayHello from "./routes/sayHello";
 import { errorHandler } from "./utils/responseUtils";
 import cors from "cors";  // Import the cors package
 
@@ -27,6 +28,7 @@ app.use(Express.json());
 // Connect to MongoDB
 ConnectDB();
 
+app.use("/", sayHello)
 app.use("/auth", authRoutes);
 app.use("/task", taskRoutes);
 
