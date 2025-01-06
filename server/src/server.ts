@@ -11,10 +11,8 @@ dotenv.config();
 
 const app = Express();
 
-// Middleware for JSON parsing
 app.use(Express.json());
 
-// Connect to MongoDB
 ConnectDB();
 
 app.use(cors());
@@ -29,7 +27,6 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Export as a function (using ES Modules syntax)
 export default (req: Request, res: Response): void => {
   app(req, res);
 };
